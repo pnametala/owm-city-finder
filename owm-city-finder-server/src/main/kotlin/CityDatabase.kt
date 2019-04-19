@@ -15,6 +15,7 @@ import org.apache.lucene.util.Version
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.File
+import java.text.Normalizer
 
 object CityDatabase {
     private val log = LoggerFactory.getLogger(CityDatabase::class.java)
@@ -29,7 +30,7 @@ object CityDatabase {
         withLuceneWriter { indexWriter ->
             CityListJsonCache.forEachCity { city ->
                 val doc = Document()
-                doc.add(Field("name", city.name, Field.Store.NO, Field.Index.ANALYZED))
+                doc.add(Field("name", city.name.removeDiacritic(), Field.Store.NO, Field.Index.ANALYZED))
                 doc.add(Field("id", city.id.toString(), Field.Store.NO, Field.Index.ANALYZED))
                 doc.add(Field("json", city.toJson(), Field.Store.YES, Field.Index.NOT_ANALYZED))
                 indexWriter.addDocument(doc)
@@ -78,7 +79,7 @@ class CityDatabaseConnection(private val directory: FSDirectory, private val ind
 
     fun findByName(query: String, maxResults: Int): List<City> {
         require(query.isNotBlank()) { "query is blank" }
-        val modifiedQuery = query.replaceNonAlphanumericCharsWithSpace()
+        val modifiedQuery = query.removeDiacritic().replaceNonAlphanumericCharsWithSpace()
                 .splitByWhitespaces()
                 .map { "$it*" }
                 .joinToString(" AND ")
@@ -140,3 +141,7 @@ private val REGEX_WHITESPACES = "[\\p{javaWhitespace}\\p{javaSpaceChar}\u2000-\u
 fun CharSequence.splitByWhitespaces() = REGEX_WHITESPACES.split(this).filterNotBlank()
 
 fun Iterable<String>.filterNotBlank(): List<String> = filter { it.isNotBlank() }
+
+private val ACCENT_MATCHER = "\\p{M}".toRegex()
+
+fun String.removeDiacritic(): String = Normalizer.normalize(this, Normalizer.Form.NFKD).replace(ACCENT_MATCHER, "")

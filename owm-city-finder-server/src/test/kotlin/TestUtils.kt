@@ -4,9 +4,7 @@ import com.github.mvysny.dynatest.DynaNodeGroup
 
 fun DynaNodeGroup.usingApp() {
     beforeGroup {
-        if (!CityDatabase.exists()) {
-            CityListJsonCache.initCache()
-            CityDatabase.index()
-        }
+        CityListJsonCache.initCache()
+        CityDatabase.index()
     }
 }
