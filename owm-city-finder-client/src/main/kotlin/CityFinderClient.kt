@@ -3,7 +3,9 @@ package com.gitlab.mvysny.owmcityfinder.client
 import okhttp3.OkHttpClient
 
 data class Coord(var lon: Double, var lat: Double)
-data class City(var id: Long, var name: String, var country: String, var coord: Coord)
+data class City(var id: Long, var name: String, var country: String, var coord: Coord) {
+    fun toJson(): String = OkHttp.gson.toJson(this)
+}
 
 /**
  * A convenient client to access the City Finder server.
