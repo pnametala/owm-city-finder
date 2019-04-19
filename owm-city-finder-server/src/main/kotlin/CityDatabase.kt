@@ -81,6 +81,7 @@ class CityDatabaseConnection(private val directory: FSDirectory, private val ind
         require(query.isNotBlank()) { "query is blank" }
         val modifiedQuery = query.removeDiacritic().replaceNonAlphanumericCharsWithSpace()
                 .splitByWhitespaces()
+                .filterNot { it.isStopWord() }  // Lucene search for "of*" will find nothing; better remove all stopwords
                 .map { "$it*" }
                 .joinToString(" AND ")
         if (modifiedQuery.isBlank()) return listOf()
@@ -144,4 +145,12 @@ fun Iterable<String>.filterNotBlank(): List<String> = filter { it.isNotBlank() }
 
 private val ACCENT_MATCHER = "\\p{M}".toRegex()
 
-fun String.removeDiacritic(): String = Normalizer.normalize(this, Normalizer.Form.NFKD).replace(ACCENT_MATCHER, "")
+fun String.removeDiacritic(): String {
+    return Normalizer.normalize(this, Normalizer.Form.NFKD)
+            .replace(ACCENT_MATCHER, "")
+            .replace("æ", "ae")
+}
+
+private val STOP_WORDS = setOf("a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", "into", "is", "it", "no", "not", "of", "on", "or", "such", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "will", "with")
+
+fun String.isStopWord() = STOP_WORDS.contains(toLowerCase())

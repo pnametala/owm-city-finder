@@ -64,5 +64,17 @@ class RestServerTest : DynaTest({
             expectList("Bāgmatī Zone") { client.findByName("Bāgmatī Zone").map { it.name } }
             expectList("Bāgmatī Zone") { client.findByName("Bagmati Zone").map { it.name } }
         }
+        test("ae") {
+            expectList("Kværndrup") { client.findByName("Kværndrup").map { it.name }}
+            expectList("Kværndrup") { client.findByName("Kvaerndrup").map { it.name }}
+        }
+        test("Å") {
+            expectList("Arslev", "Årslev") { client.findByName("Årslev").map { it.name }}
+            expectList("Arslev", "Årslev") { client.findByName("arslev").map { it.name }}
+        }
+        test("Consolação") {
+            expectList("Consolação") { client.findByName("Consolação").map { it.name }}
+            expectList("Consolação") { client.findByName("consolacao").map { it.name }}
+        }
     }
 })
