@@ -13,7 +13,6 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.SimpleFileVisitor
 import java.util.zip.GZIPInputStream
 
-
 fun InputStream.downloadTo(file: File) {
     try {
         file.outputStream().use { fileStream -> copyTo(fileStream) }
@@ -92,3 +91,16 @@ fun File.size(): Long {
 fun InputStream.gunzip(): InputStream = GZIPInputStream(this)
 
 val cacheDir: File = File(userHome, ".temp/owm-city-finder").apply { mkdirs2() }
+
+fun <T: Closeable, R> T.andTry(block: (T)->R): R {
+    try {
+        return block(this)
+    } catch (t: Throwable) {
+        try {
+            close()
+        } catch (t2: Throwable) {
+            t.addSuppressed(t2)
+        }
+        throw t
+    }
+}

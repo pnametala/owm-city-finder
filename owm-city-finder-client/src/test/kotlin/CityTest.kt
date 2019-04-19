@@ -18,4 +18,10 @@ class CityTest : DynaTest({
         val city: City = OkHttp.gson.fromJson(json, City::class.java)
         expect(City(707860L, "Hurzuf", "UA", Coord(34.283333, 44.549999))) { city }
     }
+
+    test("to json") {
+        expect("""{"id":707860,"name":"Hurzuf","country":"UA","coord":{"lon":34.283333,"lat":44.549999}}""") {
+            City(707860L, "Hurzuf", "UA", Coord(34.283333, 44.549999)).toJson()
+        }
+    }
 })

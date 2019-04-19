@@ -1,13 +1,19 @@
 package com.gitlab.mvysny.owmcityfinder.server
 
+import com.gitlab.mvysny.owmcityfinder.client.City
+import com.gitlab.mvysny.owmcityfinder.client.OkHttp
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
+import org.apache.lucene.index.IndexReader
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
+import org.apache.lucene.queryParser.QueryParser
+import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.store.FSDirectory
 import org.apache.lucene.util.Version
 import org.slf4j.LoggerFactory
+import java.io.Closeable
 import java.io.File
 
 object CityDatabase {
@@ -32,6 +38,14 @@ object CityDatabase {
         log.info("City database ready, uses ${luceneDir.size()} bytes")
     }
 
+    fun open(): CityDatabaseConnection = FSDirectory.open(luceneDir).andTry { directory ->
+        IndexReader.open(directory, true).andTry { reader ->
+            IndexSearcher(reader).andTry { searcher ->
+                CityDatabaseConnection(directory, reader, searcher)
+            }
+        }
+    }
+
     private fun withLuceneWriter(block: (luceneWriter: IndexWriter) -> Unit) {
         FSDirectory.open(luceneDir).use { directory ->
             StandardAnalyzer(Version.LUCENE_30).use { analyzer ->
@@ -43,5 +57,20 @@ object CityDatabase {
                 }
             }
         }
+    }
+}
+
+class CityDatabaseConnection(private val directory: FSDirectory, private val indexReader: IndexReader, private val searcher: IndexSearcher) : Closeable {
+    override fun close() {
+        searcher.closeQuietly()
+        indexReader.closeQuietly()
+        directory.closeQuietly()
+    }
+
+    fun findById(id: Long): City? {
+        val parser = QueryParser(Version.LUCENE_30, "id", StandardAnalyzer(Version.LUCENE_30))
+        val docs: List<Document> = searcher.search(parser.parse(id.toString()), 1).scoreDocs.map { searcher.doc(it.doc) }
+        val doc = docs.firstOrNull() ?: return null
+        return OkHttp.gson.fromJson(doc.get("json"), City::class.java)
     }
 }
