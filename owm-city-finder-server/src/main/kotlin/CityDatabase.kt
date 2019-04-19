@@ -17,12 +17,22 @@ import java.io.Closeable
 import java.io.File
 import java.text.Normalizer
 
+/**
+ * Represents a database containing all cities. Call [index] to build the database; call [open] to query the database.
+ * Not thread-safe.
+ */
 object CityDatabase {
     private val log = LoggerFactory.getLogger(CityDatabase::class.java)
     private val luceneDir = File(cacheDir, "lucene")
 
+    /**
+     * Checks if the database
+     */
     fun exists() = luceneDir.exists()
 
+    /**
+     * Re-creates the index with all cities.
+     */
     fun index() {
         log.info("Rebuilding city database at $luceneDir")
         luceneDir.rmrf()
@@ -39,6 +49,9 @@ object CityDatabase {
         log.info("City database ready, uses ${luceneDir.size()} bytes")
     }
 
+    /**
+     * Opens a database connection and allows you to search for cities. Fails if the database does not exist ([exists] returns false).
+     */
     fun open(): CityDatabaseConnection = FSDirectory.open(luceneDir).andTry { directory ->
         IndexReader.open(directory, true).andTry { reader ->
             IndexSearcher(reader).andTry { searcher ->
@@ -48,13 +61,15 @@ object CityDatabase {
     }
 
     private fun withLuceneWriter(block: (luceneWriter: IndexWriter) -> Unit) {
-        FSDirectory.open(luceneDir).use { directory ->
-            StandardAnalyzer(Version.LUCENE_30).use { analyzer ->
-                IndexWriter(directory, IndexWriterConfig(Version.LUCENE_30, analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE)).use { luceneWriter ->
-                    luceneWriter.maxFieldLength = IndexWriter.MaxFieldLength.UNLIMITED.limit
-                    block(luceneWriter)
-                    log.info("Optimizing Lucene index")
-                    luceneWriter.forceMerge(1, true)
+        withCleanupOnError(luceneDir) {
+            FSDirectory.open(luceneDir).use { directory ->
+                StandardAnalyzer(Version.LUCENE_30).use { analyzer ->
+                    IndexWriter(directory, IndexWriterConfig(Version.LUCENE_30, analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE)).use { luceneWriter ->
+                        luceneWriter.maxFieldLength = IndexWriter.MaxFieldLength.UNLIMITED.limit
+                        block(luceneWriter)
+                        log.info("Optimizing Lucene index")
+                        luceneWriter.forceMerge(1, true)
+                    }
                 }
             }
         }

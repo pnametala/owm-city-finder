@@ -25,7 +25,13 @@ class CityFinderClient(val baseUrl: String, val client: OkHttpClient = OkHttp.cl
         return client.exec(request) { response -> response.json(City::class.java) }
     }
 
+    /**
+     * Finds a list of cities by name. Performs partial starts-with matches; handles diacritics and national characters
+     * properly.
+     * @param query anything that the user inputted into the search field. Returns empty list if blank.
+     */
     fun findByName(query: String): List<City> {
+        if (query.isBlank()) return listOf()
         val request = "$baseUrl/city".buildUrl {
             setEncodedQueryParameter("query", query)
         }.buildRequest()

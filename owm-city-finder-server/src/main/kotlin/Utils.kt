@@ -13,12 +13,28 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.SimpleFileVisitor
 import java.util.zip.GZIPInputStream
 
+/**
+ * Downloads the stream into given [file]. Overwrites the file silently; fails if the file exists and is a directory.
+ * Deletes the file on unsuccessful download. Does not close the input stream.
+ */
 fun InputStream.downloadTo(file: File) {
-    try {
+    withCleanupOnError(file) {
         file.outputStream().use { fileStream -> copyTo(fileStream) }
+    }
+}
+
+/**
+ * Runs given [block]; deletes given [file] (may be a directory) if the block throws an exception.
+ *
+ * Intended to be used with downloaders or indexers or anything producing files as it computes - this function will
+ * clean up the partially written file if the block fails.
+ */
+fun <R> withCleanupOnError(file: File, block: ()->R): R {
+    try {
+        return block()
     } catch (t: Throwable) {
         try {
-            Files.deleteIfExists(file.toPath())
+            file.rmrf()
         } catch (t2: Throwable) {
             t.addSuppressed(t2)
         }
@@ -26,6 +42,10 @@ fun InputStream.downloadTo(file: File) {
     }
 }
 
+/**
+ * Downloads the contents of given URL into given [file]. Overwrites the file silently; fails if the file exists and is a directory.
+ * Deletes the file on unsuccessful download.
+ */
 fun URL.downloadTo(file: File) {
     openStream().use { urlStream -> urlStream.downloadTo(file) }
 }
@@ -67,6 +87,9 @@ fun File.rmrf() {
     })
 }
 
+/**
+ * Computes the size of the file; traverses the directory recursively and sums sizes of all files.
+ */
 fun File.size(): Long {
     var size = 0L
     Files.walkFileTree(toPath(), object : SimpleFileVisitor<Path>() {
@@ -88,6 +111,9 @@ fun File.size(): Long {
     return size
 }
 
+/**
+ * Creates a stream which gunzips this stream ([GZIPInputStream]).
+ */
 fun InputStream.gunzip(): InputStream = GZIPInputStream(this)
 
 val cacheDir: File = File(userHome, ".temp/owm-city-finder").apply { mkdirs2() }
