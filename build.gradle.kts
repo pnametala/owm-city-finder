@@ -15,7 +15,7 @@ defaultTasks("clean", "build")
 
 allprojects {
     group = "com.gitlab.mvysny.owmcityfinder"
-    version = "0.1-SNAPSHOT"
+    version = "0.1"
     repositories {
         jcenter()
     }
@@ -120,3 +120,8 @@ subprojects {
     }
 }
 
+// to release:
+// $ ./gradlew upload
+val upload by tasks.creating {
+    dependsOn("clean", "build", "bintrayUpload", "owm-city-finder-server:jib")
+}
