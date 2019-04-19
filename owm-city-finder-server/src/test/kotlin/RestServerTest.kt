@@ -1,11 +1,13 @@
 package com.gitlab.mvysny.owmcityfinder.server
 
 import com.github.mvysny.dynatest.DynaTest
+import com.github.mvysny.dynatest.expectList
 import com.github.mvysny.dynatest.expectThrows
 import com.gitlab.mvysny.owmcityfinder.client.City
 import com.gitlab.mvysny.owmcityfinder.client.CityFinderClient
 import com.gitlab.mvysny.owmcityfinder.client.Coord
 import java.io.FileNotFoundException
+import java.io.IOException
 import kotlin.test.expect
 
 class RestServerTest : DynaTest({
@@ -25,9 +27,30 @@ class RestServerTest : DynaTest({
         }
     }
 
-    test("city retrieved") {
-        expect(City(707860L, "Hurzuf", "UA", Coord(34.283333, 44.549999))) {
-            client.getById(707860)
+    group("GET city/id") {
+        test("simple valid test") {
+            expect(City(707860L, "Hurzuf", "UA", Coord(34.283333, 44.549999))) {
+                client.getById(707860)
+            }
+        }
+    }
+
+
+    group("GET /city by name") {
+        test("simple one-word search") {
+            expectList(City(707860L, "Hurzuf", "UA", Coord(34.283333, 44.549999))) {
+                client.findByName("Hurzuf")
+            }
+        }
+        test("partial one-word search") {
+            expectList(City(707860L, "Hurzuf", "UA", Coord(34.283333, 44.549999))) {
+                client.findByName("Hurz")
+            }
+        }
+        test("multiple word search") {
+            expectList(City(1269750L, "Republic of India", "IN", Coord(77.0, 20.0))) {
+                client.findByName("Republic of India")
+            }
         }
     }
 })

@@ -24,4 +24,11 @@ class CityFinderClient(val baseUrl: String, val client: OkHttpClient = OkHttp.cl
         val request = "$baseUrl/city/$id".buildUrl().buildRequest()
         return client.exec(request) { response -> response.json(City::class.java) }
     }
+
+    fun findByName(query: String): List<City> {
+        val request = "$baseUrl/city".buildUrl {
+            setEncodedQueryParameter("query", query)
+        }.buildRequest()
+        return client.exec(request) { response -> response.jsonArray(City::class.java) }
+    }
 }

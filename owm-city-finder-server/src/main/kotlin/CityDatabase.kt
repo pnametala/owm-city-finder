@@ -67,10 +67,72 @@ class CityDatabaseConnection(private val directory: FSDirectory, private val ind
         directory.closeQuietly()
     }
 
+    private fun Document.toCity() = OkHttp.gson.fromJson(get("json"), City::class.java)
+
     fun findById(id: Long): City? {
         val parser = QueryParser(Version.LUCENE_30, "id", StandardAnalyzer(Version.LUCENE_30))
         val docs: List<Document> = searcher.search(parser.parse(id.toString()), 1).scoreDocs.map { searcher.doc(it.doc) }
         val doc = docs.firstOrNull() ?: return null
-        return OkHttp.gson.fromJson(doc.get("json"), City::class.java)
+        return doc.toCity()
+    }
+
+    fun findByName(query: String, maxResults: Int): List<City> {
+        require(query.isNotBlank()) { "query is blank" }
+        val modifiedQuery = query.splitByWhitespaces()
+                .map { it.stripNonAlphanumericChars() }
+                .filterNotBlank()
+                .map { "$it*" }
+                .joinToString(" AND ")
+        val parser = QueryParser(Version.LUCENE_30, "name", StandardAnalyzer(Version.LUCENE_30))
+        val docs: List<Document> = searcher.search(parser.parse(modifiedQuery), maxResults).scoreDocs.map { searcher.doc(it.doc) }
+        return docs.map { it.toCity() }
     }
 }
+
+/**
+ * Determines if the specified character (Unicode code point) is an alphabet.
+ * <p>
+ * A character is considered to be alphabetic if its general category type,
+ * provided by {@link Character#getType(int) getType(codePoint)}, is any of
+ * the following:
+ * <ul>
+ * <li> <code>UPPERCASE_LETTER</code>
+ * <li> <code>LOWERCASE_LETTER</code>
+ * <li> <code>TITLECASE_LETTER</code>
+ * <li> <code>MODIFIER_LETTER</code>
+ * <li> <code>OTHER_LETTER</code>
+ * <li> <code>LETTER_NUMBER</code>
+ * </ul>
+ * or it has contributory property Other_Alphabetic as defined by the
+ * Unicode Standard.
+ *
+ * @param   codePoint the character (Unicode code point) to be tested.
+ * @return  <code>true</code> if the character is a Unicode alphabet
+ *          character, <code>false</code> otherwise.
+ * @since   1.7
+ */
+fun Int.isAlphabetic(): Boolean {
+    // do not use Character.isAlphabetic(c) - only present since Android API 19
+    val type = Character.getType(this)
+    // triedy su zobrate z javadocu k Character.isAlphabetic
+    return type == Character.UPPERCASE_LETTER.toInt() ||
+            type == Character.LOWERCASE_LETTER.toInt() ||
+            type == Character.TITLECASE_LETTER.toInt() ||
+            type == Character.MODIFIER_LETTER.toInt() ||
+            type == Character.OTHER_LETTER.toInt() ||
+            type == Character.LETTER_NUMBER.toInt()
+}
+
+fun String.stripNonAlphanumericChars(): String = filter { it.toInt().isAlphabetic() || Character.isDigit(it) }
+
+/**
+ * https://youtrack.jetbrains.com/issue/KT-11669
+ */
+private val REGEX_WHITESPACES = "[\\p{javaWhitespace}\\p{javaSpaceChar}\u2000-\u200f]+".toRegex()
+
+/**
+ * Splits words by whitespaces. Removes all blank words. Splits also by the NBSP 160 char.
+ */
+fun CharSequence.splitByWhitespaces() = REGEX_WHITESPACES.split(this).filterNotBlank()
+
+fun Iterable<String>.filterNotBlank(): List<String> = filter { it.isNotBlank() }
