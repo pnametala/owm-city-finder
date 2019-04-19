@@ -16,6 +16,7 @@ fun InputStream.downloadTo(file: File) {
         } catch (t2: Throwable) {
             t.addSuppressed(t2)
         }
+        throw t
     }
 }
 
