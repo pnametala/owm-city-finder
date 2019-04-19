@@ -76,5 +76,8 @@ class RestServerTest : DynaTest({
             expectList("Consolação") { client.findByName("Consolação").map { it.name }}
             expectList("Consolação") { client.findByName("consolacao").map { it.name }}
         }
+        test("country search") {
+            expectList("Helsinki", "Helsinki", "Helsinki") { client.findByName("Helsinki,FI").map { it.name }}
+        }
     }
 })

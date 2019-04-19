@@ -30,7 +30,7 @@ object CityDatabase {
         withLuceneWriter { indexWriter ->
             CityListJsonCache.forEachCity { city ->
                 val doc = Document()
-                doc.add(Field("name", city.name.removeDiacritic(), Field.Store.NO, Field.Index.ANALYZED))
+                doc.add(Field("name", "${city.name} ${city.country}".removeDiacritic(), Field.Store.NO, Field.Index.ANALYZED))
                 doc.add(Field("id", city.id.toString(), Field.Store.NO, Field.Index.ANALYZED))
                 doc.add(Field("json", city.toJson(), Field.Store.YES, Field.Index.NOT_ANALYZED))
                 indexWriter.addDocument(doc)
