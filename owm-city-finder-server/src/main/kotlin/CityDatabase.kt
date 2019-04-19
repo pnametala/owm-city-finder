@@ -78,11 +78,11 @@ class CityDatabaseConnection(private val directory: FSDirectory, private val ind
 
     fun findByName(query: String, maxResults: Int): List<City> {
         require(query.isNotBlank()) { "query is blank" }
-        val modifiedQuery = query.splitByWhitespaces()
-                .map { it.stripNonAlphanumericChars() }
-                .filterNotBlank()
+        val modifiedQuery = query.replaceNonAlphanumericCharsWithSpace()
+                .splitByWhitespaces()
                 .map { "$it*" }
                 .joinToString(" AND ")
+        if (modifiedQuery.isBlank()) return listOf()
         val parser = QueryParser(Version.LUCENE_30, "name", StandardAnalyzer(Version.LUCENE_30))
         val docs: List<Document> = searcher.search(parser.parse(modifiedQuery), maxResults).scoreDocs.map { searcher.doc(it.doc) }
         return docs.map { it.toCity() }
@@ -123,7 +123,11 @@ fun Int.isAlphabetic(): Boolean {
             type == Character.LETTER_NUMBER.toInt()
 }
 
-fun String.stripNonAlphanumericChars(): String = filter { it.toInt().isAlphabetic() || Character.isDigit(it) }
+fun String.replaceNonAlphanumericCharsWithSpace(): String = replace { if (it.toInt().isAlphabetic() || Character.isDigit(it)) it else ' ' }
+
+fun String.replace(block: (Char)->Char): String = buildString(length) {
+    this@replace.forEach { append(block(it)) }
+}
 
 /**
  * https://youtrack.jetbrains.com/issue/KT-11669

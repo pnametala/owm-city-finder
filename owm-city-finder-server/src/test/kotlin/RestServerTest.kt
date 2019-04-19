@@ -47,10 +47,22 @@ class RestServerTest : DynaTest({
                 client.findByName("Hurz")
             }
         }
+        test("invalid char search returns no cities") {
+            expectList() { client.findByName("*") }
+        }
         test("multiple word search") {
             expectList(City(1269750L, "Republic of India", "IN", Coord(77.0, 20.0))) {
                 client.findByName("Republic of India")
             }
+        }
+        test("separator search") {
+            expectList("Zavety Il’icha", "Zavety Il’icha") { client.findByName("Zavety Il’icha").map { it.name } }
+            expectList("Zavety Il’icha", "Zavety Il’icha") { client.findByName("Zavety Il icha").map { it.name } }
+            expectList("Zavety Il’icha", "Zavety Il’icha") { client.findByName("Zavety Il'icha").map { it.name } }
+        }
+        test("diacritic search") {
+            expectList("Bāgmatī Zone") { client.findByName("Bāgmatī Zone").map { it.name } }
+            expectList("Bāgmatī Zone") { client.findByName("Bagmati Zone").map { it.name } }
         }
     }
 })
