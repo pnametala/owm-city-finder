@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e -o pipefail
+CP=`ls lib/*.jar|tr '\n' ':'`
+exec java $JAVA_OPTS -cp $CP com.gitlab.mvysny.owmcityfinder.server.MainKt "$@"

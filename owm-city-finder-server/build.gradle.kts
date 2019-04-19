@@ -9,3 +9,15 @@ dependencies {
 
 val configureBintray = ext["configureBintray"] as (artifactId: String) -> Unit
 configureBintray("owm-city-finder-server")
+
+val zip by tasks.creating(Zip::class) {
+    from("src/main/scripts")
+    into("lib") {
+        from(configurations.runtime.allArtifacts.files)
+        from(configurations.runtime)
+    }
+}
+
+artifacts {
+    add("archives", zip)
+}

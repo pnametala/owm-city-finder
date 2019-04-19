@@ -7,8 +7,8 @@ object Main {
 }
 private val log = Main.log
 
-fun main() {
-    val port = 25314
+fun main(args: Array<String>) {
+    val port = args.firstOrNull()?.toInt() ?: 25314
     log.info("OpenWeatherMap City Finder Server starting")
     if (!CityDatabase.exists()) {
         log.info("City database doesn't exist, rebuilding")
