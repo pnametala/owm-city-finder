@@ -1,3 +1,7 @@
+plugins {
+    id("com.google.cloud.tools.jib") version "1.1.1"
+}
+
 dependencies {
     compile(kotlin("stdlib-jdk8"))
     compile("io.javalin:javalin:${properties["javalin_version"]}")
@@ -20,4 +24,10 @@ val zip by tasks.creating(Zip::class) {
 
 artifacts {
     add("archives", zip)
+}
+
+jib {
+    from {
+        image = "openjdk:11"
+    }
 }

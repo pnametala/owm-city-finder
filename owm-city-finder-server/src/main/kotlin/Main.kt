@@ -10,6 +10,7 @@ private val log = Main.log
 fun main(args: Array<String>) {
     val port = args.firstOrNull()?.toInt() ?: 25314
     log.info("OpenWeatherMap City Finder Server starting")
+    log.info("Running on Java ${System.getProperty("java.vendor")} ${System.getProperty("java.home")} ${System.getProperty("java.version")}; ${System.getProperty("os.arch")} ${System.getProperty("os.name")} ${System.getProperty("os.version")}")
     if (!CityDatabase.exists()) {
         log.info("City database doesn't exist, rebuilding")
         CityListJsonCache.initCache()
