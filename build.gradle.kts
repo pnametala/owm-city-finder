@@ -121,7 +121,8 @@ subprojects {
 }
 
 // to release:
-// $ ./gradlew upload
+// $ ./gradlew clean build upload
 val upload by tasks.creating {
     dependsOn("clean", "build", "bintrayUpload", "owm-city-finder-server:jib")
 }
+
