@@ -1,6 +1,7 @@
 package com.gitlab.mvysny.owmcityfinder.client
 
 import com.github.mvysny.dynatest.DynaTest
+import com.google.gson.Gson
 import kotlin.test.expect
 
 class CityTest : DynaTest({
@@ -15,7 +16,7 @@ class CityTest : DynaTest({
               }
             }
         """.trimIndent()
-        val city: City = OkHttp.gson.fromJson(json, City::class.java)
+        val city: City = Gson().fromJson(json, City::class.java)
         expect(City(707860L, "Hurzuf", "UA", Coord(34.283333, 44.549999))) { city }
     }
 

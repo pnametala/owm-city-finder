@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 dependencies {
     compile(kotlin("stdlib-jdk8"))
     compile("com.squareup.okhttp3:okhttp:${properties["okhttp_version"]}")
@@ -8,3 +10,7 @@ dependencies {
 
 val configureBintray = ext["configureBintray"] as (artifactId: String) -> Unit
 configureBintray("owm-city-finder-client")
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.6"
+}

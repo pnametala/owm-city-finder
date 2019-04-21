@@ -1,7 +1,7 @@
 package com.gitlab.mvysny.owmcityfinder.server
 
 import com.gitlab.mvysny.owmcityfinder.client.City
-import com.gitlab.mvysny.owmcityfinder.client.OkHttp
+import com.google.gson.Gson
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -77,13 +77,14 @@ object CityDatabase {
 }
 
 class CityDatabaseConnection(private val directory: FSDirectory, private val indexReader: IndexReader, private val searcher: IndexSearcher) : Closeable {
+    private val gson = Gson()
     override fun close() {
         searcher.closeQuietly()
         indexReader.closeQuietly()
         directory.closeQuietly()
     }
 
-    private fun Document.toCity() = OkHttp.gson.fromJson(get("json"), City::class.java)
+    private fun Document.toCity() = gson.fromJson(get("json"), City::class.java)
 
     fun findById(id: Long): City? {
         val parser = QueryParser(Version.LUCENE_30, "id", StandardAnalyzer(Version.LUCENE_30))

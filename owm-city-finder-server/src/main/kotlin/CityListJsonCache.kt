@@ -1,7 +1,6 @@
 package com.gitlab.mvysny.owmcityfinder.server
 
 import com.gitlab.mvysny.owmcityfinder.client.City
-import com.gitlab.mvysny.owmcityfinder.client.OkHttp
 import com.google.gson.stream.JsonReader
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -37,7 +36,7 @@ object CityListJsonCache {
             val reader = JsonReader(fileStream.buffered().gunzip().reader().buffered())
             reader.beginArray()
             while (reader.hasNext()) {
-                val city: City = OkHttp.gson.fromJson<City>(reader, City::class.java)
+                val city: City = City.gson.fromJson<City>(reader, City::class.java)
                 block(city)
             }
             reader.endArray()

@@ -1,7 +1,6 @@
 package com.gitlab.mvysny.owmcityfinder.server
 
 import com.gitlab.mvysny.owmcityfinder.client.City
-import com.gitlab.mvysny.owmcityfinder.client.OkHttp
 import io.javalin.Javalin
 import io.javalin.NotFoundResponse
 import java.io.Closeable
@@ -24,7 +23,7 @@ class RestServer(val port: Int, val db: CityDatabaseConnection): Closeable {
         get("/city") { ctx ->
             val query = ctx.queryParam<String>("query").get()
             val cities: List<City> = db.findByName(query, 100)
-            ctx.result(OkHttp.gson.toJson(cities))
+            ctx.result(City.gson.toJson(cities))
         }
         start(port)
     }

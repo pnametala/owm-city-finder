@@ -1,7 +1,6 @@
 package com.gitlab.mvysny.owmcityfinder.client
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import okhttp3.*
 import java.io.Closeable
@@ -41,22 +40,17 @@ object OkHttp : Closeable {
      * All REST client calls will reuse this client. Automatically destroyed in [close].
      */
     var client: OkHttpClient = OkHttpClient()
-    /**
-     * The default [Gson] interface used by all serialization/deserialization methods. Simply reassign with another [Gson]
-     * instance to reconfigure. To be thread-safe, do the reassignment in your `ServletContextListener`.
-     */
-    var gson: Gson = GsonBuilder().create()
 }
 
 /**
  * Parses the response as a JSON and converts it to a Java object with given [clazz] using [OkHttpClientVokPlugin.gson].
  */
-fun <T> ResponseBody.json(clazz: Class<T>): T = OkHttp.gson.fromJson(charStream(), clazz)
+fun <T> ResponseBody.json(clazz: Class<T>, gson: Gson): T = gson.fromJson(charStream(), clazz)
 
 /**
  * Parses the response as a JSON array and converts it into a list of Java object with given [clazz] using [OkHttpClientVokPlugin.gson].
  */
-fun <T> ResponseBody.jsonArray(clazz: Class<T>): List<T> = OkHttp.gson.fromJsonArray(charStream(), clazz)
+fun <T> ResponseBody.jsonArray(clazz: Class<T>, gson: Gson): List<T> = gson.fromJsonArray(charStream(), clazz)
 
 /**
  * Parses [json] as a list of items with class [itemClass] and returns that.
@@ -87,7 +81,7 @@ fun <T> OkHttpClient.exec(request: Request, responseBlock: (ResponseBody) -> T):
 /**
  * Parses the response as a JSON map and converts it into a map of objects with given [valueClass] using [OkHttpClientVokPlugin.gson].
  */
-fun <V> ResponseBody.jsonMap(valueClass: Class<V>): Map<String, V> = OkHttp.gson.fromJsonMap(charStream(), valueClass)
+fun <V> ResponseBody.jsonMap(valueClass: Class<V>, gson: Gson): Map<String, V> = gson.fromJsonMap(charStream(), valueClass)
 
 /**
  * Parses [json] as a map of items with class [valueClass] and returns that.
