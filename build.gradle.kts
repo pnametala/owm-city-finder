@@ -15,7 +15,7 @@ defaultTasks("clean", "build")
 
 allprojects {
     group = "com.gitlab.mvysny.owmcityfinder"
-    version = "0.2"
+    version = "0.3-SNAPSHOT"
     repositories {
         jcenter()
     }
