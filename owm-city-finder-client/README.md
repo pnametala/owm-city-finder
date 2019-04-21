@@ -11,7 +11,7 @@ repositories {
     maven { setUrl("https://dl.bintray.com/mvysny/gitlab") }
 }
 dependencies {
-    compile("com.gitlab.mvysny.owmcityfinder:owm-city-finder-client:0.1")
+    compile("com.gitlab.mvysny.owmcityfinder:owm-city-finder-client:0.2")
 }
 ```
 

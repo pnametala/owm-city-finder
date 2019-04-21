@@ -13,7 +13,7 @@ The only thing you can configure is the port number to listen to.
 The easiest way is to simply run the [owm-city-finder-server Docker image](https://cloud.docker.com/repository/docker/mvysny/owm-city-finder-server):
 
 ```bash
-docker run --rm -ti -p25314:25314 mvysny/owm-city-finder-server:0.1
+docker run --rm -ti -p25314:25314 mvysny/owm-city-finder-server:0.2
 ```
 
 Alternatively, build the server from sources. That will build a zip file which

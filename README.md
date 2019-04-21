@@ -11,7 +11,7 @@ This server will automatically download and index the list of cities and will pr
 The easiest way is to simply run the [owm-city-finder-server Docker image](https://cloud.docker.com/repository/docker/mvysny/owm-city-finder-server):
 
 ```bash
-docker run --rm -ti -p25314:25314 mvysny/owm-city-finder-server:0.1
+docker run --rm -ti -p25314:25314 mvysny/owm-city-finder-server:0.2
 ```
 
 To test, simply run curl:
