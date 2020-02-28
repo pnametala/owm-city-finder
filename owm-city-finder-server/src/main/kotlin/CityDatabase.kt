@@ -53,6 +53,7 @@ object CityDatabase {
      * Opens a database connection and allows you to search for cities. Fails if the database does not exist ([exists] returns false).
      */
     fun open(): CityDatabaseConnection = FSDirectory.open(luceneDir).andTry { directory ->
+        @Suppress("DEPRECATION")
         IndexReader.open(directory, true).andTry { reader ->
             IndexSearcher(reader).andTry { searcher ->
                 CityDatabaseConnection(directory, reader, searcher)
@@ -65,6 +66,7 @@ object CityDatabase {
             FSDirectory.open(luceneDir).use { directory ->
                 StandardAnalyzer(Version.LUCENE_30).use { analyzer ->
                     IndexWriter(directory, IndexWriterConfig(Version.LUCENE_30, analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE)).use { luceneWriter ->
+                        @Suppress("DEPRECATION")
                         luceneWriter.maxFieldLength = IndexWriter.MaxFieldLength.UNLIMITED.limit
                         block(luceneWriter)
                         log.info("Optimizing Lucene index")

@@ -2,7 +2,7 @@ package com.gitlab.mvysny.owmcityfinder.server
 
 import com.gitlab.mvysny.owmcityfinder.client.City
 import io.javalin.Javalin
-import io.javalin.NotFoundResponse
+import io.javalin.http.NotFoundResponse
 import java.io.Closeable
 
 /**
